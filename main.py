@@ -14,6 +14,7 @@ if not OPENAI_API_KEY:
 
 TG_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 client = OpenAI(api_key=OPENAI_API_KEY)
+conversation_history = {}
 
 SYSTEM_PROMPT = """
 Ты — личный Telegram-секретарь Баходура Дадабаева.
@@ -58,14 +59,35 @@ def telegram(method, payload=None):
     return data["result"]
 
 
-def ask_openai(text):
+def ask_openai(chat_id, text):
+    history = conversation_history.get(chat_id, [])
+
+    history.append({
+        "role": "user",
+        "content": text
+    })
+
+    # Оставляем последние 20 сообщений,
+    # чтобы история не становилась слишком большой
+    history = history[-20:]
+
     response = client.responses.create(
         model="gpt-5-mini",
         instructions=SYSTEM_PROMPT,
-        input=text
+        input=history
     )
 
-    return response.output_text.strip()
+    answer = response.output_text.strip()
+
+    history.append({
+        "role": "assistant",
+        "content": answer
+    })
+
+    conversation_history[chat_id] = history[-20:]
+
+    return answer
+
 
 
 def send_business_message(chat_id, connection_id, text):
@@ -101,7 +123,7 @@ def handle_business_message(message):
         return
 
     try:
-        answer = ask_openai(text)
+        answer = ask_openai(chat_id, text)
 
         if not answer:
             answer = (
