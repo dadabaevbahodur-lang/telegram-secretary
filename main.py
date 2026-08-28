@@ -15,6 +15,15 @@ if not OPENAI_API_KEY:
 TG_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 client = OpenAI(api_key=OPENAI_API_KEY)
 conversation_history = {}
+def load_knowledge():
+    try:
+        with open("knowledge.txt", "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        print("Knowledge error:", repr(e))
+        return ""
+
+KNOWLEDGE = load_knowledge()
 
 SYSTEM_PROMPT = """
 Ты — личный AI-секретарь Баходура Дадабаева в Telegram.
@@ -239,7 +248,7 @@ def ask_openai(chat_id, text):
 
     response = client.responses.create(
         model="gpt-5-mini",
-        instructions=SYSTEM_PROMPT,
+instructions=SYSTEM_PROMPT + "\n\n=== БАЗА ЗНАНИЙ ===\n" + KNOWLEDGE,
         input=history
     )
 
