@@ -47,7 +47,7 @@ def telegram(method, payload=None):
     response = requests.post(
         f"{TG_API}/{method}",
         json=payload or {},
-        timeout=30
+        timeout=70
     )
     response.raise_for_status()
     data = response.json()
