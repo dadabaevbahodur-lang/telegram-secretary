@@ -142,6 +142,7 @@ def main():
 
             for update in updates:
                 offset = update["update_id"] + 1
+                print("UPDATE:", update, flush=True)
 
                 if "business_connection" in update:
                     connection = update["business_connection"]
